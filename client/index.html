@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+    <script src="msgpack.js"></script>
+    <script src="socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+  </head>
+  <body>
+    <div id="app">
+      <button @click="encoded()">Encoded</button>
+      <button @click="unencoded()">Unencoded</button>
+      <div id="chat-box">
+        <div v-for="(chatMessage, index) in messages" :key="index">
+          <strong>{{ chatMessage.date | time }}</strong>: {{ chatMessage.message }}
+        </div>
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Chat message"
+          id="chat-message"
+          v-model="chatMessage"
+          @keydown.enter="sendChatMessage"
+        />
+      </div>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#app',
+        filters: {
+          /** @param {Date} date */
+          time(date) {
+            return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+          }
+        },
+
+        data: {
+          socket: null,
+          chatMessage: '',
+          messages: [],
+        },
+
+        mounted() {
+          this.socket = new io('http://127.0.0.1:3000');
+
+          this.socket.on('chat:message', (buffer) => {
+            const arr = new Uint8Array(buffer);
+            const chatMessage = msgpack.unpack(arr);
+            this.messages.push({
+              date: new Date(),
+              message: chatMessage.message
+            });
+          });
+        },
+
+        methods: {
+          sendChatMessage() {
+            if (!this.chatMessage) {
+              return;
+            }
+
+            this.socket.emit('chat:send', {
+              room: 'main',
+              message: this.chatMessage,
+            });
+
+            this.chatMessage = '';
+          },
+
+          encoded() {
+            this.socket.emit('chat:encoded');
+          },
+
+          unencoded() {
+            this.socket.emit('chat:unencoded');
+          }
+        },
+      });
+    </script>
+  </body>
+  <style>
+  #chat-box {
+      width: 500px;
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid black;
+      padding: 5px;
+  }
+
+  #chat-message {
+      border-top: none;
+      width: 498px;
+      padding: 5px;
+      outline: none;
+  }
+  </style>
+</html>

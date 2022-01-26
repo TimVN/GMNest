@@ -1,0 +1,64 @@
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { ChatModule } from './chat/chat.module';
+import { AuthModule } from './auth/auth.module';
+import { WorldModule } from './world/world.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './_common/database/entities/user.entity';
+import { RedisModule } from '@nestjs-modules/ioredis';
+import { RedisClientModule } from './_common/modules/redis-client.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { configs } from './_common/configs';
+import { MonsterModule } from './_common/modules/monster.module';
+import { AuthService } from './auth/auth.service';
+import { PlayersModule } from './players/players.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      load: configs,
+      envFilePath: ['.env.development'],
+    }),
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigService],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.postgres.host'),
+        port: configService.get('database.postgres.port'),
+        username: configService.get('database.postgres.username'),
+        password: configService.get('database.postgres.password'),
+        database: configService.get('database.postgres.database'),
+        entities: [User],
+        synchronize: true,
+      }),
+    }),
+
+    RedisModule.forRootAsync({
+      imports: [ConfigService],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        config: {
+          host: configService.get('database.redis.host'),
+          port: configService.get('database.redis.port'),
+        },
+      }),
+    }),
+
+    RedisClientModule,
+    ChatModule,
+    AuthModule,
+    WorldModule,
+
+    MonsterModule,
+
+    PlayersModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}

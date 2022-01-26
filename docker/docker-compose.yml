@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:5-alpine
+    ports:
+      - 6379:6379
+  postgres:
+    image: postgres:12.6-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=gmnest
+      - POSTGRES_PASSWORD=9JbAGW4XAr4jw2U
+    volumes:
+      - postgres_data:/var/lib/postgresql
+  redis-admin:
+    image: rediscommander/redis-commander
+    ports:
+      - 4568:8081
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 4570:8080
+volumes:
+  postgres_data:
