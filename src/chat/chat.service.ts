@@ -12,7 +12,7 @@ export class ChatService {
   ) {}
 
   sendMessage(client: Client, chatMessage: ChatMessageDto) {
-    chatMessage.content = `${client.data.name}: ${chatMessage.content}`;
+    chatMessage.content = `${client.data.username}: ${chatMessage.content}`;
     chatMessage.sentAt = Date.now();
 
     this.chatPersistenceService.addChatMessage(chatMessage);

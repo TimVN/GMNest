@@ -34,7 +34,7 @@ export class PlayersGateway {
   @Subscribe(PlayersGateway.ns, 'player:clicked')
   playerClicked(client: Client, payload: { entityId: string }) {
     const chatMessage: ChatMessageDto = {
-      content: `${client.data.name} clicked on you!`,
+      content: `${client.data.username} clicked on you!`,
       sentAt: Date.now(),
     };
 

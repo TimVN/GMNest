@@ -11,8 +11,16 @@ import { RedisClientModule } from './_common/modules/redis-client.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configs } from './_common/configs';
 import { MonsterModule } from './_common/modules/monster.module';
-import { AuthService } from './auth/auth.service';
 import { PlayersModule } from './players/players.module';
+import {
+  Inventory,
+  InventoryItem,
+} from './_common/database/entities/inventory.entity';
+import { Item } from './_common/database/entities/item.entity';
+import { InventoryModule } from './inventory/inventory.module';
+import { ItemCategory } from './_common/database/entities/item-category.entity';
+import { TradingModule } from './trading/trading.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -33,7 +41,7 @@ import { PlayersModule } from './players/players.module';
         username: configService.get('database.postgres.username'),
         password: configService.get('database.postgres.password'),
         database: configService.get('database.postgres.database'),
-        entities: [User],
+        entities: [User, Inventory, InventoryItem, ItemCategory, Item],
         synchronize: true,
       }),
     }),
@@ -57,6 +65,10 @@ import { PlayersModule } from './players/players.module';
     MonsterModule,
 
     PlayersModule,
+
+    InventoryModule,
+
+    TradingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

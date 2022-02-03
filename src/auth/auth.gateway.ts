@@ -18,7 +18,7 @@ export class AuthGateway {
     }
 
     client.user = user;
-    client.data.name = user.username;
+    client.data.username = user.username;
 
     client.emit('authorized');
   }

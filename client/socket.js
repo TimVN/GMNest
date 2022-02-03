@@ -43,8 +43,8 @@ function mixin(obj) {
  */
 
 Emitter.prototype.on = Emitter.prototype.addEventListener = function (
-  event,
-  fn,
+    event,
+    fn,
 ) {
   this._callbacks = this._callbacks || {};
   (this._callbacks['$' + event] = this._callbacks['$' + event] || []).push(fn);
@@ -83,46 +83,46 @@ Emitter.prototype.once = function (event, fn) {
  */
 
 Emitter.prototype.off =
-  Emitter.prototype.removeListener =
-  Emitter.prototype.removeAllListeners =
-  Emitter.prototype.removeEventListener =
-    function (event, fn) {
-      this._callbacks = this._callbacks || {};
+    Emitter.prototype.removeListener =
+        Emitter.prototype.removeAllListeners =
+            Emitter.prototype.removeEventListener =
+                function (event, fn) {
+                  this._callbacks = this._callbacks || {};
 
-      // all
-      if (0 == arguments.length) {
-        this._callbacks = {};
-        return this;
-      }
+                  // all
+                  if (0 == arguments.length) {
+                    this._callbacks = {};
+                    return this;
+                  }
 
-      // specific event
-      var callbacks = this._callbacks['$' + event];
-      if (!callbacks) return this;
+                  // specific event
+                  var callbacks = this._callbacks['$' + event];
+                  if (!callbacks) return this;
 
-      // remove all handlers
-      if (1 == arguments.length) {
-        delete this._callbacks['$' + event];
-        return this;
-      }
+                  // remove all handlers
+                  if (1 == arguments.length) {
+                    delete this._callbacks['$' + event];
+                    return this;
+                  }
 
-      // remove specific handler
-      var cb;
-      for (var i = 0; i < callbacks.length; i++) {
-        cb = callbacks[i];
-        if (cb === fn || cb.fn === fn) {
-          callbacks.splice(i, 1);
-          break;
-        }
-      }
+                  // remove specific handler
+                  var cb;
+                  for (var i = 0; i < callbacks.length; i++) {
+                    cb = callbacks[i];
+                    if (cb === fn || cb.fn === fn) {
+                      callbacks.splice(i, 1);
+                      break;
+                    }
+                  }
 
-      // Remove event specific arrays for event types that no
-      // one is subscribed for to avoid memory leak.
-      if (callbacks.length === 0) {
-        delete this._callbacks['$' + event];
-      }
+                  // Remove event specific arrays for event types that no
+                  // one is subscribed for to avoid memory leak.
+                  if (callbacks.length === 0) {
+                    delete this._callbacks['$' + event];
+                  }
 
-      return this;
-    };
+                  return this;
+                };
 
 /**
  * Emit `event` with the given args.
@@ -136,7 +136,7 @@ Emitter.prototype.emit = function (event) {
   this._callbacks = this._callbacks || {};
 
   var args = new Array(arguments.length - 1),
-    callbacks = this._callbacks['$' + event];
+      callbacks = this._callbacks['$' + event];
 
   for (var i = 1; i < arguments.length; i++) {
     args[i - 1] = arguments[i];
@@ -186,14 +186,14 @@ const PacketType = {
 };
 
 const isInteger =
-  Number.isInteger ||
-  function (value) {
-    return (
-      typeof value === 'number' &&
-      isFinite(value) &&
-      Math.floor(value) === value
-    );
-  };
+    Number.isInteger ||
+    function (value) {
+      return (
+          typeof value === 'number' &&
+          isFinite(value) &&
+          Math.floor(value) === value
+      );
+    };
 
 const isString = function (value) {
   return typeof value === 'string';
@@ -236,9 +236,9 @@ function isDataValid(decoded) {
 
 Decoder.prototype.checkPacket = function (decoded) {
   const isTypeValid =
-    isInteger(decoded.type) &&
-    decoded.type >= PacketType.CONNECT &&
-    decoded.type <= PacketType.CONNECT_ERROR;
+      isInteger(decoded.type) &&
+      decoded.type >= PacketType.CONNECT &&
+      decoded.type <= PacketType.CONNECT_ERROR;
   if (!isTypeValid) {
     throw new Error('invalid packet type');
   }
@@ -262,6 +262,7 @@ function init(url, optionString) {
     ...{
       autoConnect: false,
       reconnection: false,
+      extraHeaders: { authorization: 'Tim' },
       // transports: ['websocket'],
       parser: {
         Decoder,
@@ -296,13 +297,13 @@ function cloneData(data) {
 function send(event, data, callback, eventId) {
   const payload = JSON.parse(data);
 
-  socket.emit(event, payload, (data) => {
+  socket.emit(event, payload, (e, data) => {
     const clone = cloneData(data);
 
-    console.log(`Incoming event: ${event}`);
-    console.table(clone);
+    console.log(`ACK event: ${event}`);
+    console.table(data);
 
-    if (callback) {
+    if (callback && !e) {
       callback(null, null, JSON.stringify(clone), eventId);
     }
   });

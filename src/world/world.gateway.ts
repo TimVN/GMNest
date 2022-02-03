@@ -6,9 +6,9 @@ import { ChatMessageDto } from '../_common/dtos/chat-message.dto';
 import { AuthWsGuard } from '../_common/guards/auth-ws.guard';
 import { UseGuards } from '@nestjs/common';
 import { Subscribe } from '../_common/decorators/subscribe.decorator';
-import { PlayerMoveDto } from '../_common/dtos/player-move.dto';
 import { Rat } from '../_common/monsters/rat.monster';
-import {WorldEvents} from './events.enum';
+import { WorldEvents } from './events.enum';
+import { ItemDropsService } from '../_common/services/item-drops.service';
 
 const rooms: Rooms = {
   rGrass: {
@@ -56,6 +56,14 @@ export class WorldGateway {
   @WebSocketServer()
   private server: Server;
 
+  constructor(private itemDropsService: ItemDropsService) {}
+
+  handleConnection(client: Client) {
+    client.data.x = 600;
+    client.data.y = 100;
+    this.joinRoom(client, { roomId: 'RmDemo' });
+  }
+
   @Subscribe(WorldGateway.ns, WorldEvents.JoinRoom)
   async joinRoom(client: Client, payload: { roomId: string }) {
     const oldRoomId = client.data.roomId;
@@ -67,6 +75,7 @@ export class WorldGateway {
     const room = rooms[payload.roomId];
 
     if (!room) {
+      console.log(`Room with ID ${payload.roomId} does not exist`);
       return;
     }
 
@@ -88,6 +97,8 @@ export class WorldGateway {
 
     const players = await this.playersInRoom(payload.roomId);
 
+    const drops = await this.itemDropsService.getDrops(payload.roomId);
+
     // Send a snapshot of the room to the transitioning player
     const npcs = (room.npcs || []).map(({ entityId, data }) => ({
       entityId,
@@ -96,6 +107,7 @@ export class WorldGateway {
     client.emit('world:room:snapshot', {
       players,
       npcs,
+      drops,
     });
 
     // Spawn the transitioning player
@@ -114,18 +126,6 @@ export class WorldGateway {
     return {
       roomId: client.id,
     };
-  }
-
-  // Testing private communication
-  @Subscribe(WorldGateway.ns, 'player:clicked')
-  playerClicked(client: Client, payload: { entityId: string }) {
-    const chatMessage: ChatMessageDto = {
-      content: `${client.data.name} clicked on you!`,
-      sentAt: Date.now(),
-    };
-
-    // Send message to person clicked on
-    this.server.to(payload.entityId).emit('chat:message', chatMessage);
   }
 
   // Testing private communication

@@ -13,7 +13,6 @@ class RedisConfigService implements ClientsModuleOptionsFactory {
 
   createClientOptions(): ClientOptions {
     const redisConfig = this.configService.get('database.redis');
-    console.log(`redisConfig`, redisConfig);
     return {
       transport: Transport.REDIS,
       options: {

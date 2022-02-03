@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { WorldGateway } from './world.gateway';
-import { EncodingService } from '../_common/services/encoding.service';
+import { ItemDropsService } from '../_common/services/item-drops.service';
 
 @Module({
-  providers: [EncodingService, WorldGateway],
+  providers: [ItemDropsService, WorldGateway],
 })
 export class WorldModule {}
