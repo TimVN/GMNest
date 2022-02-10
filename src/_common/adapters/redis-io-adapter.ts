@@ -45,7 +45,6 @@ export class RedisIoAdapter extends IoAdapter {
     const server = super.createIOServer(port, options);
     server.adapter(redisAdapter);
 
-
     server.use(async (client: Client, next: () => void) => {
       const user = await this.authService.getUser(
         client.handshake.headers.authorization,

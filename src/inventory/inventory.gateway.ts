@@ -45,16 +45,16 @@ export class InventoryGateway {
 
   @Subscribe(InventoryGateway.ns, 'drop:pickup')
   async pickupDrop(client: Client, payload) {
-    const inventoryItem = await this.inventoryService.pickupDrop(
+    const inventoryItems = await this.inventoryService.pickupDrop(
       client.user.id,
       client.data.roomId,
       payload.id,
     );
 
-    if (inventoryItem) {
+    if (inventoryItems) {
       this.server.to(client.data.roomId).emit(client.event, { id: payload.id });
 
-      client.emit('inventory:add', inventoryItem);
+      client.emit('inventory:update-items', inventoryItems);
     }
   }
 }

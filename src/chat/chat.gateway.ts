@@ -26,9 +26,9 @@ export class ChatGateway {
   }
 
   @Subscribe(ChatGateway.ns, 'message')
-  handleMessage(client: Client, chatMessage: ChatMessageDto) {
+  async handleMessage(client: Client, chatMessage: ChatMessageDto) {
     if (chatMessage.content.charAt(0) === '/') {
-      const [event, payload] = this.commandsService.parseCommand(
+      const [event, payload] = await this.commandsService.parseCommand(
         client,
         chatMessage.content,
       );

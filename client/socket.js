@@ -300,10 +300,9 @@ function send(event, data, callback, eventId) {
   socket.emit(event, payload, (e, data) => {
     const clone = cloneData(data);
 
-    console.log(`ACK event: ${event}`);
-    console.table(data);
-
     if (callback && !e) {
+      console.log(`ACK event: ${event}`);
+      console.table(data);
       callback(null, null, JSON.stringify(clone), eventId);
     }
   });

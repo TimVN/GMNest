@@ -12,5 +12,6 @@ import { Item } from '../_common/database/entities/item.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Inventory, InventoryItem, Item])],
   providers: [InventoryService, ItemDropsService, InventoryGateway],
+  exports: [InventoryService],
 })
 export class InventoryModule {}

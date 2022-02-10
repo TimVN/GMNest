@@ -7,6 +7,7 @@ export interface Client extends Partial<Socket> {
   event?: string;
 
   data?: {
+    id: string;
     username: string;
     roomId: string;
     x: number;

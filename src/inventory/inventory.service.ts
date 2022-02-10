@@ -39,19 +39,35 @@ export class InventoryService {
   ) {
     const item = await this.getInventoryItem(id);
 
-    if (!item) {
+    if (!item || item.amount < amount) {
       return;
     }
 
     if (item.amount > 1) {
-      item.amount--;
+      item.amount -= amount;
 
       await this.updateInventoryItem(item);
       const drop = await this.itemDropsService.addDrop(
         roomId,
         position,
+        amount,
         item.item,
       );
+
+      if (item.amount === 0) {
+        await this.deleteInventoryItem(item.id);
+        const drop = await this.itemDropsService.addDrop(
+          roomId,
+          position,
+          amount,
+          item.item,
+        );
+
+        return {
+          amount: 0,
+          drop,
+        };
+      }
 
       return {
         amount: item.amount,
@@ -62,6 +78,7 @@ export class InventoryService {
       const drop = await this.itemDropsService.addDrop(
         roomId,
         position,
+        1,
         item.item,
       );
 
@@ -88,19 +105,54 @@ export class InventoryService {
     }
 
     const item = await this.itemRepository.findOne({ id: drop.id });
-    const inventory = await this.repository.findOne({ userId });
+    const inventory = await this.repository.findOne(
+      { userId },
+      { relations: ['items', 'items.item'] },
+    );
 
     if (!item || !inventory) {
       return;
     }
 
-    const inventoryItem = new InventoryItem();
+    if (item.stackable) {
+      const items = [];
 
-    inventoryItem.item = item;
-    inventoryItem.inventory = inventory;
-    inventoryItem.amount = 1;
+      while (drop.amount > 0) {
+        const existingItem = inventory.items.find((entry) => {
+          return entry.item.id === item.id;
+        });
 
-    return await this.inventoryItemRepository.save(inventoryItem);
+        if (existingItem) {
+          const difference = item.stackSize - existingItem.amount;
+          const add = Math.min(difference, drop.amount);
+          existingItem.amount += add;
+
+          drop.amount -= add;
+
+          items.push(await this.inventoryItemRepository.save(existingItem));
+        } else {
+          const inventoryItem = new InventoryItem();
+
+          inventoryItem.item = item;
+          inventoryItem.inventory = inventory;
+          inventoryItem.amount = drop.amount;
+
+          drop.amount = 0;
+
+          items.push(await this.inventoryItemRepository.save(inventoryItem));
+        }
+      }
+
+      return items;
+    } else {
+      const inventoryItem = new InventoryItem();
+
+      inventoryItem.item = item;
+      inventoryItem.inventory = inventory;
+      inventoryItem.amount = drop.amount;
+
+      return [await this.inventoryItemRepository.save(inventoryItem)];
+    }
   }
 
   getInventoryItem(id: number) {
@@ -116,5 +168,41 @@ export class InventoryService {
 
   deleteInventoryItem(id: number) {
     return this.inventoryItemRepository.delete(id);
+  }
+
+  async addItemToInventory(userId: string, itemId: number, amount: number) {
+    const inventory = await this.repository.findOne({ userId });
+
+    if (!inventory) {
+      return;
+    }
+
+    const item = await this.itemRepository.findOne(itemId);
+
+    if (!item) {
+      return;
+    }
+
+    const inventoryItem = new InventoryItem();
+
+    inventoryItem.inventory = inventory;
+    inventoryItem.item = item;
+    inventoryItem.amount = Math.min(amount || 1, item.stackSize);
+
+    await this.inventoryItemRepository.save(inventoryItem);
+
+    return ['inventory:add', inventoryItem];
+  }
+
+  getInventory(userId: string) {
+    return this.repository.findOne({ userId });
+  }
+
+  getInventoryItems(itemIds: number[]) {
+    return this.inventoryItemRepository
+      .createQueryBuilder('inventory_item')
+      .leftJoinAndSelect('inventory_item.item', 'item')
+      .where('inventory_item.id IN(:...itemIds)', { itemIds })
+      .getMany();
   }
 }

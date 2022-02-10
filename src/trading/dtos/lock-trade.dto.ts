@@ -1,8 +1,6 @@
 import { IsDefined } from 'class-validator';
 
-export class AddItemDto {
+export class LockTradeDto {
   @IsDefined()
-  id: number;
-
-  amount: number;
+  userId: string;
 }

@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { Client } from '../_common/interfaces/client.interface';
 import { PlayerTeleportDto } from '../_common/dtos/player-teleport.dto';
 import { ChatPersistenceService } from './chat.persistence.service';
+import { InventoryService } from '../inventory/inventory.service';
 
 @Injectable()
 export class CommandsService {
-  constructor(private chatPersistenceService: ChatPersistenceService) {}
+  constructor(
+    private chatPersistenceService: ChatPersistenceService,
+    private inventoryService: InventoryService,
+  ) {}
 
-  parseCommand(client: Client, message: string) {
+  async parseCommand(client: Client, message: string) {
     const command = message.split(' ');
 
     switch (command[0]) {
@@ -16,6 +20,15 @@ export class CommandsService {
           return;
         }
         return this.teleport(client, +command[1], +command[2]);
+
+      case '/giveitem':
+        const result = await this.inventoryService.addItemToInventory(
+          client.user.id,
+          +command[1],
+          +command[2],
+        );
+
+        return result || [];
 
       case '/clear':
         this.chatPersistenceService.clearChatHistory();

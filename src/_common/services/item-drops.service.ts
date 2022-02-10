@@ -9,9 +9,10 @@ export class ItemDropsService {
     // this.redis.del('drops_rGrass').then(() => null);
   }
 
-  async addDrop(roomId: string, position, item: Item) {
+  async addDrop(roomId: string, position, amount: number, item: Item) {
     const drop = {
       id: item.id,
+      amount,
       dropId: randomUUID(),
       label: item.label,
       iconSetIndex: item.iconSetIndex,
