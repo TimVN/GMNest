@@ -27,6 +27,13 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 ```
 
+Make sure to have [Docker](https://www.docker.com/) installed. Refer to the [docs here](https://docs.docker.com/get-docker/).
+
+```bash
+$ cd docker
+$ docker-compose up 
+```
+
 ## Running the app
 
 ```bash
