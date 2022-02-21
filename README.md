@@ -2,7 +2,7 @@
   <img src="https://i.imgur.com/FqK7k6l.png" width="320" alt="GMNest Logo" />
 </p>
 
-<p align="center">A simple setup for multiplayer HTML5 games made with Game Maker Studio 2.3</p>
+<p align="center">A simple setup for creating multiplayer HTML5 with Game Maker Studio 2.3</p>
 
 ## Description
 
