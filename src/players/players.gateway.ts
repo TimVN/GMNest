@@ -1,7 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { Client } from '../_common/interfaces/client.interface';
-import { ChatMessageDto } from '../_common/dtos/chat-message.dto';
 import { Subscribe } from '../_common/decorators/subscribe.decorator';
 import { PlayerMoveDto } from '../_common/dtos/player-move.dto';
 import { PlayerEvents } from './player-events.enum';
@@ -30,18 +29,6 @@ export class PlayersGateway {
     this.server.to(client.data.roomId).emit(client.event, move);
   }
 
-  // Testing private communication
-  @Subscribe(PlayersGateway.ns, 'player:clicked')
-  playerClicked(client: Client, payload: { entityId: string }) {
-    const chatMessage: ChatMessageDto = {
-      content: `${client.data.username} clicked on you!`,
-      sentAt: Date.now(),
-    };
-
-    // Send message to person clicked on
-    this.server.to(payload.entityId).emit('chat:message', chatMessage);
-  }
-
   // Gets all players (sockets) in room with a certain id
   async playersInRoom(id: string) {
     const room = await this.server.of('/').adapter.rooms.get(id);
@@ -49,7 +36,7 @@ export class PlayersGateway {
     const players = [];
 
     for (let i = 0; i < socketIds.length; i++) {
-      const { data } = await this.server.of('/').sockets.get(socketIds[i]);
+      const { data } = this.server.of('/').sockets.get(socketIds[i]);
 
       players.push({
         entityId: socketIds[i],

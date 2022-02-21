@@ -18,11 +18,15 @@ export class InventoryService {
     private itemDropsService: ItemDropsService,
   ) {}
 
-  getUserInventory(userId: string) {
-    return this.repository.findOne(
+  async getUserInventory(userId: string) {
+    const inventory = await this.repository.findOne(
       { userId },
       { relations: ['items', 'items.item'] },
     );
+
+    inventory.items.sort((item, otherItem) => item.slot - otherItem.slot);
+
+    return inventory;
   }
 
   async useInventoryItem(id: number) {
@@ -119,7 +123,9 @@ export class InventoryService {
 
       while (drop.amount > 0) {
         const existingItem = inventory.items.find((entry) => {
-          return entry.item.id === item.id;
+          return (
+            entry.item.id === item.id && entry.amount < entry.item.stackSize
+          );
         });
 
         if (existingItem) {
@@ -129,7 +135,10 @@ export class InventoryService {
 
           drop.amount -= add;
 
-          items.push(await this.inventoryItemRepository.save(existingItem));
+          await this.inventoryItemRepository.save(existingItem);
+
+          delete existingItem.inventory;
+          items.push(existingItem);
         } else {
           const inventoryItem = new InventoryItem();
 
@@ -139,7 +148,9 @@ export class InventoryService {
 
           drop.amount = 0;
 
-          items.push(await this.inventoryItemRepository.save(inventoryItem));
+          await this.inventoryItemRepository.save(inventoryItem);
+
+          items.push(inventoryItem);
         }
       }
 
@@ -151,7 +162,11 @@ export class InventoryService {
       inventoryItem.inventory = inventory;
       inventoryItem.amount = drop.amount;
 
-      return [await this.inventoryItemRepository.save(inventoryItem)];
+      await this.inventoryItemRepository.save(inventoryItem);
+
+      delete inventoryItem.inventory;
+
+      return [inventoryItem];
     }
   }
 
@@ -191,7 +206,7 @@ export class InventoryService {
 
     await this.inventoryItemRepository.save(inventoryItem);
 
-    return ['inventory:add', inventoryItem];
+    return ['inventory:add', [inventoryItem]];
   }
 
   getInventory(userId: string) {

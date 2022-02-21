@@ -20,9 +20,10 @@ export class ChatGateway {
   @WebSocketServer()
   private server: Server;
 
-  async handleConnection(client: Client) {
+  @Subscribe(ChatGateway.ns, 'history')
+  async getChatHistory() {
     const messages = await this.chatPersistenceService.getHistory();
-    client.emit('chat:history', messages);
+    return { identifier: 'world', messages: messages || [] };
   }
 
   @Subscribe(ChatGateway.ns, 'message')
@@ -33,8 +34,6 @@ export class ChatGateway {
         chatMessage.content,
       );
 
-      console.log(event, payload);
-
       if (!event) {
         return;
       }
@@ -43,9 +42,30 @@ export class ChatGateway {
       return;
     }
 
-    this.server.emit(
-      'chat:message',
-      this.chatService.sendMessage(client, chatMessage),
-    );
+    if (chatMessage.identifier === 'world') {
+      this.server.emit(
+        'chat:message',
+        this.chatService.sendMessage(client, chatMessage),
+      );
+    } else {
+      const identifier = await this.getRoomIdentifier(
+        client,
+        chatMessage.identifier,
+      );
+
+      if (identifier) {
+        this.server.to(identifier).emit('chat:message', chatMessage);
+      }
+    }
+  }
+
+  async getRoomIdentifier(client: Client, identifier: 'party' | 'guild') {
+    switch (identifier) {
+      case 'party':
+        return this.chatPersistenceService.getPlayerPartyId(client.id);
+
+      default:
+        return '';
+    }
   }
 }

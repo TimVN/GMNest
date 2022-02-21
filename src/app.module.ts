@@ -21,6 +21,8 @@ import { InventoryModule } from './inventory/inventory.module';
 import { ItemCategory } from './_common/database/entities/item-category.entity';
 import { TradingModule } from './trading/trading.module';
 import { AppGateway } from './app.gateway';
+import { PartyModule } from './party/party.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -57,18 +59,16 @@ import { AppGateway } from './app.gateway';
       }),
     }),
 
+    EventEmitterModule.forRoot(),
     RedisClientModule,
     ChatModule,
     AuthModule,
     WorldModule,
-
     MonsterModule,
-
     PlayersModule,
-
     InventoryModule,
-
     TradingModule,
+    PartyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

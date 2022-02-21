@@ -5,7 +5,7 @@ import { TradingEvents } from './trading-events.enum';
 import { Client } from '../_common/interfaces/client.interface';
 import { TradingProposalDto } from './dtos/trading-proposal.dto';
 import { Server } from 'socket.io';
-import { TradingResponse, TradingResponseCode } from './dtos/tradingResponse';
+import { TradingResponse, TradingResponseCode } from './dtos/trading-response';
 import { TradingService } from './trading.service';
 import { AcceptProposalDto } from './dtos/accept-proposal.dto';
 import { AddItemDto } from './dtos/add-item.dto';
@@ -193,13 +193,7 @@ export class TradingGateway {
       return new TradingResponse(TradingResponseCode.Error);
     }
 
-    console.log('confirmTradeDTO');
-    console.log(confirmTradeDto);
-
     const theirItemsInTrade = await this.service.getItemsInTrade(userInTrade);
-
-    console.log('Their Items in trade');
-    console.log(theirItemsInTrade);
 
     // The following is a check to confirm the client is seeing the same items as we've kept track of
     // The DTO contains an array of TradeItems, which have an item ID and amount
@@ -242,6 +236,13 @@ export class TradingGateway {
 
     const myItemsInTrade = await this.service.getItemsInTrade(client.id);
 
+    // No items offered, no reason to continue
+    if (theirItemsInTrade.length === 0 && myItemsInTrade.length === 0) {
+      await this.cancelTrade(client);
+
+      return;
+    }
+
     // We've done every possible check, lets complete the trade
     if (otherConfirmedWith === client.id) {
       // Complete the trade!
@@ -265,29 +266,21 @@ export class TradingGateway {
             )
           : [];
 
-      console.log('My Items in trade');
-      console.log(myItemsInTrade);
-
-      console.log('My Offer');
-      console.log(myOffer);
-      console.log('Their Offer');
-      console.log(theirOffer);
-
-      console.log('My Inventory');
-      console.log(myInventory);
-
-      console.log('Their Inventory');
-      console.log(theirInventory);
-
       const transaction = [];
+
+      const myUpdatedItems = [];
+      const myAddedItems = [];
+      const theirUpdatedItems = [];
+      const theirAddedItems = [];
 
       myOffer.forEach((item) => {
         const tradeItem = myItemsInTrade.find((i) => i.id === item.id);
 
         // This is a simple swap of ownership
         if (tradeItem.amount === item.amount) {
-          console.log(`Swapping ownership of ${item.id}`);
           item.inventory = theirInventory;
+          myUpdatedItems.push({ id: tradeItem.id, amount: 0 });
+          theirAddedItems.push(item);
         } else {
           item.amount -= tradeItem.amount;
 
@@ -296,6 +289,9 @@ export class TradingGateway {
           newItem.amount = tradeItem.amount;
           newItem.inventory = theirInventory;
           newItem.item = item.item;
+
+          myUpdatedItems.push({ id: tradeItem.id, amount: item.amount });
+          theirAddedItems.push(newItem);
 
           transaction.push(this.inventoryService.updateInventoryItem(newItem));
         }
@@ -308,8 +304,9 @@ export class TradingGateway {
 
         // This is a simple swap of ownership
         if (tradeItem.amount === item.amount) {
-          console.log(`Swapping ownership of ${item.id}`);
           item.inventory = myInventory;
+          theirUpdatedItems.push({ id: tradeItem.id, amount: 0 });
+          myAddedItems.push(item);
         } else {
           item.amount -= tradeItem.amount;
 
@@ -319,16 +316,24 @@ export class TradingGateway {
           newItem.inventory = myInventory;
           newItem.item = item.item;
 
+          myAddedItems.push(newItem);
+          theirUpdatedItems.push({ id: tradeItem.id, amount: item.amount });
+
           transaction.push(this.inventoryService.updateInventoryItem(newItem));
         }
 
         transaction.push(this.inventoryService.updateInventoryItem(item));
       });
 
+      client.emit('inventory:update', myUpdatedItems);
+      client.emit('inventory:add', myAddedItems);
+
+      otherUser.emit('inventory:update', theirUpdatedItems);
+      otherUser.emit('inventory:add', theirAddedItems);
+
       await Promise.all(transaction).catch((e) => {
         console.log(e);
       });
-      console.log(`Trade complete`);
 
       await this.cancelTrade(client);
     }
@@ -344,7 +349,6 @@ export class TradingGateway {
     const userInTrade = await this.service.getUserInTrade(client.id);
 
     if (!userInTrade) {
-      console.log('Not cancelling trade!');
       return;
     }
 
@@ -356,6 +360,7 @@ export class TradingGateway {
     this.server.sockets
       .to(userInTrade)
       .emit(`${TradingGateway.ns}:${TradingEvents.Cancel}`);
+    client.emit(`${TradingGateway.ns}:${TradingEvents.Cancel}`);
 
     // Tell the player cancelling the trade that we succeeded
     return new TradingResponse(TradingResponseCode.Success);

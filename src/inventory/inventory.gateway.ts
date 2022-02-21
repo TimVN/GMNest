@@ -39,7 +39,7 @@ export class InventoryGateway {
     if (drop) {
       this.server.to(client.data.roomId).emit('world:drop', drop);
 
-      client.emit('inventory:update', { id: payload.id, amount });
+      client.emit('inventory:update', [{ id: payload.id, amount }]);
     }
   }
 
