@@ -1,18 +1,7 @@
 import { Socket } from 'socket.io';
-import { Movement } from '../dtos/player-move.dto';
-import { User } from '../database/entities/user.entity';
+import { User } from './user.interface';
 
 export interface Client extends Partial<Socket> {
   user?: User;
   event?: string;
-
-  data?: {
-    id: string;
-    username: string;
-    roomId: string;
-    x: number;
-    y: number;
-    movement: Movement;
-    event: string;
-  };
 }

@@ -4,7 +4,6 @@ import { ServerOptions, Socket } from 'socket.io';
 import { createAdapter } from 'socket.io-redis';
 import * as msgPackParser from 'socket.io-msgpack-parser';
 import { Client } from '../interfaces/client.interface';
-import { AuthService } from '../../auth/auth.service';
 import { INestApplicationContext } from '@nestjs/common';
 import {
   first,
@@ -24,14 +23,8 @@ const subClient = pubClient.duplicate();
 const redisAdapter = createAdapter({ pubClient, subClient });
 
 export class RedisIoAdapter extends IoAdapter {
-  private authService: AuthService;
-
   constructor(app: INestApplicationContext) {
     super(app);
-
-    app.resolve<AuthService>(AuthService).then((authService) => {
-      this.authService = authService;
-    });
   }
 
   bindClientConnect(server, callback: () => void) {
@@ -40,24 +33,14 @@ export class RedisIoAdapter extends IoAdapter {
 
   createIOServer(port: number, options?: ServerOptions): any {
     options.parser = msgPackParser;
-    // options.transports = ['websocket'];
 
     const server = super.createIOServer(port, options);
     server.adapter(redisAdapter);
 
     server.use(async (client: Client, next: () => void) => {
-      const user = await this.authService.getUser(
-        client.handshake.headers.authorization,
-      );
-
-      if (!user) {
-        return client.conn.close();
-      }
-
-      client.user = user;
-      client.data.username = user.username;
-
-      client.emit('authorized');
+      client.user = {
+        username: client.handshake.headers.authorization,
+      };
 
       next();
     });

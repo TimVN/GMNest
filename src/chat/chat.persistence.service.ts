@@ -33,12 +33,4 @@ export class ChatPersistenceService {
   async clearChatHistory() {
     await this.redis.del('chat:history');
   }
-
-  /**
-   * Get a player's current party ID
-   * @param userId
-   */
-  getPlayerPartyId(userId: string) {
-    return this.redis.get(`party_id_${userId}`);
-  }
 }

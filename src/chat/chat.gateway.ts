@@ -5,7 +5,7 @@ import { ChatService } from './chat.service';
 import { Client } from '../_common/interfaces/client.interface';
 import { Subscribe } from '../_common/decorators/subscribe.decorator';
 import { ChatPersistenceService } from './chat.persistence.service';
-import { CommandsService } from './commands.service';
+import { ChatEvents } from './enums/chat-events.enum';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway {
@@ -14,58 +14,20 @@ export class ChatGateway {
   constructor(
     private chatService: ChatService,
     private chatPersistenceService: ChatPersistenceService,
-    private commandsService: CommandsService,
   ) {}
 
   @WebSocketServer()
   private server: Server;
 
-  @Subscribe(ChatGateway.ns, 'history')
+  @Subscribe(ChatGateway.ns, ChatEvents.History)
   async getChatHistory() {
-    const messages = await this.chatPersistenceService.getHistory();
-    return { identifier: 'world', messages: messages || [] };
+    return this.chatPersistenceService.getHistory();
   }
 
-  @Subscribe(ChatGateway.ns, 'message')
+  @Subscribe(ChatGateway.ns, ChatEvents.Message)
   async handleMessage(client: Client, chatMessage: ChatMessageDto) {
-    if (chatMessage.content.charAt(0) === '/') {
-      const [event, payload] = await this.commandsService.parseCommand(
-        client,
-        chatMessage.content,
-      );
+    const message = await this.chatService.sendMessage(client, chatMessage);
 
-      if (!event) {
-        return;
-      }
-
-      this.server.to(client.data.roomId).emit(event.toString(), payload);
-      return;
-    }
-
-    if (chatMessage.identifier === 'world') {
-      this.server.emit(
-        'chat:message',
-        this.chatService.sendMessage(client, chatMessage),
-      );
-    } else {
-      const identifier = await this.getRoomIdentifier(
-        client,
-        chatMessage.identifier,
-      );
-
-      if (identifier) {
-        this.server.to(identifier).emit('chat:message', chatMessage);
-      }
-    }
-  }
-
-  async getRoomIdentifier(client: Client, identifier: 'party' | 'guild') {
-    switch (identifier) {
-      case 'party':
-        return this.chatPersistenceService.getPlayerPartyId(client.id);
-
-      default:
-        return '';
-    }
+    this.server.emit('chat:message', message);
   }
 }
