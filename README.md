@@ -2,7 +2,7 @@
   <img src="https://i.imgur.com/FqK7k6l.png" width="320" alt="GMNest Logo" />
 </p>
 
-<p align="center">A simple setup for multiplayer HTML5 games</p>
+<p align="center">A simple setup for multiplayer HTML5 games made with Game Maker Studio 2.3</p>
 
 ## Description
 
@@ -40,6 +40,12 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## Installing the extension in Game Maker
+
+The `client` folder contains the gm-socket.io extension: `gm-socket.io.yymps`. Simply drag it onto your existing or new project.
+
+The docs for the extension will come soon!
 
 ## Support
 
