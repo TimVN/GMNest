@@ -10,7 +10,7 @@ export const redisConfig = () => {
 
   return {
     host: process.env.REDIS_HOST,
-    password: process.env.REDIS_PASSWORD,
+    password: process.env.REDIS_PASSWORD || undefined,
     port: process.env.REDIS_PORT,
   };
 };
