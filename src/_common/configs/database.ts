@@ -1,12 +1,12 @@
 import { registerAs } from '@nestjs/config';
 
 export const redisConfig = () => {
-  /*if (+process.env.IN_HEROKU) {
+  if (process.env.REDISTOGO_URL) {
     return {
       url: process.env.REDIS_URL,
-      password: process.env.REDIS_PASSWORD,
+      password: process.env.REDIS_PASSWORD || undefined,
     };
-  }*/
+  }
 
   return {
     host: process.env.REDIS_HOST,
