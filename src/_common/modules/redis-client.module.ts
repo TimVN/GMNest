@@ -6,6 +6,7 @@ import {
   ClientsModuleOptionsFactory,
   Transport,
 } from '@nestjs/microservices';
+import { redisConfig } from '../configs/database';
 
 @Injectable()
 class RedisConfigService implements ClientsModuleOptionsFactory {
@@ -14,7 +15,7 @@ class RedisConfigService implements ClientsModuleOptionsFactory {
   createClientOptions(): ClientOptions {
     return {
       transport: Transport.REDIS,
-      options: this.configService.get('database.redis'),
+      options: redisConfig(),
     };
   }
 }
