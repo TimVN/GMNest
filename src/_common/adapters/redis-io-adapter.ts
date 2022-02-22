@@ -27,7 +27,6 @@ const subClient = pubClient.duplicate();
 
 console.log('Pub client options');
 console.log(pubClient.options);
-console.log(pubClient);
 
 const redisAdapter = createAdapter({ pubClient, subClient });
 
