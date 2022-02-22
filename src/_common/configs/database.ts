@@ -3,7 +3,9 @@ import { registerAs } from '@nestjs/config';
 export default registerAs('database', () => {
   if (+process.env.IN_HEROKU) {
     return {
-      url: process.env.REDIS_URL,
+      redis: {
+        url: process.env.REDIS_URL,
+      },
     };
   }
 
