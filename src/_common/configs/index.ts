@@ -9,7 +9,7 @@ export const getConfigFiles = () => {
   }
 
   logger.log('Environment Variables');
-  logger.log(process.env);
+  logger.log(Object.keys(process.env));
 
   return ['.env.development'];
 };
