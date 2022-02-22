@@ -21,9 +21,13 @@ import { configs, getConfigFiles } from './_common/configs';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         config: {
-          host: configService.get('database.redis.host'),
-          password: configService.get('database.redis.password'),
-          port: configService.get('database.redis.port'),
+          host:
+            process.env.REDIS_HOST || configService.get('database.redis.host'),
+          password:
+            process.env.REDIS_PASSWORD ||
+            configService.get('database.redis.password'),
+          port:
+            +process.env.REDIS_PORT || configService.get('database.redis.port'),
         },
       }),
     }),
