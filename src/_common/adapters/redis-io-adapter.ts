@@ -19,7 +19,7 @@ import { MessageMappingProperties } from '@nestjs/websockets';
 import { isFunction } from '@nestjs/common/utils/shared.utils';
 import { redisConfig } from '../configs/database';
 
-const pubClient = new RedisClient(redisConfig);
+const pubClient = new RedisClient(redisConfig());
 const subClient = pubClient.duplicate();
 const redisAdapter = createAdapter({ pubClient, subClient });
 
