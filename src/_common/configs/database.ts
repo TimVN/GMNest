@@ -3,7 +3,7 @@ import { registerAs } from '@nestjs/config';
 export const redisConfig = () => {
   if (process.env.REDISTOGO_URL) {
     return {
-      url: process.env.REDIS_URL,
+      url: process.env.REDISTOGO_URL,
       password: process.env.REDIS_PASSWORD || undefined,
     };
   }
