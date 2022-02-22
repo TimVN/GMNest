@@ -24,6 +24,11 @@ console.log(redisConfig());
 
 const pubClient = new RedisClient(redisConfig());
 const subClient = pubClient.duplicate();
+
+console.log('Pub client options');
+console.log(pubClient.options);
+console.log(pubClient);
+
 const redisAdapter = createAdapter({ pubClient, subClient });
 
 export class RedisIoAdapter extends IoAdapter {
