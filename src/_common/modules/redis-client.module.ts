@@ -12,7 +12,6 @@ class RedisConfigService implements ClientsModuleOptionsFactory {
   constructor(private configService: ConfigService) {}
 
   createClientOptions(): ClientOptions {
-    console.log(this.configService.get('database.redis'));
     return {
       transport: Transport.REDIS,
       options: this.configService.get('database.redis'),

@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 
-export default registerAs('database', () => {
+export const redisConfig = () => {
   if (+process.env.IN_HEROKU) {
     return {
       redis: {
@@ -17,4 +17,6 @@ export default registerAs('database', () => {
       port: process.env.REDIS_PORT,
     },
   };
-});
+};
+
+export default registerAs('database', () => redisConfig());
