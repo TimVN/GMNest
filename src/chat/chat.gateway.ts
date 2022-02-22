@@ -31,7 +31,7 @@ export class ChatGateway {
     this.server.emit('chat:message', message);
   }
 
-  @Subscribe(ChatGateway.ns, process.env.PORT.toString())
+  @Subscribe(ChatGateway.ns, process.env.REDIS_PORT.toString())
   test(client: Client) {
     console.log(client.user.username);
   }
