@@ -30,4 +30,9 @@ export class ChatGateway {
 
     this.server.emit('chat:message', message);
   }
+
+  @Subscribe(ChatGateway.ns, 'test')
+  test(client: Client) {
+    console.log(client.user.username);
+  }
 }
