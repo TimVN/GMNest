@@ -22,6 +22,7 @@ import { configs } from './_common/configs';
       useFactory: (configService: ConfigService) => ({
         config: {
           host: configService.get('database.redis.host'),
+          password: configService.get('database.redis.password'),
           port: configService.get('database.redis.port'),
         },
       }),
