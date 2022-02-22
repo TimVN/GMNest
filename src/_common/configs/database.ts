@@ -4,7 +4,7 @@ export const redisConfig = () => {
   if (process.env.REDISTOGO_URL) {
     const parts = process.env.REDISTOGO_URL.substring(8).split('@');
 
-    const [password] = parts[0].split(':');
+    const [_, password] = parts[0].split(':');
     const [host, port] = parts[1].split(':');
 
     return {
