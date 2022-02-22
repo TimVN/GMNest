@@ -15,9 +15,7 @@ class RedisConfigService implements ClientsModuleOptionsFactory {
     const redisConfig = this.configService.get('database.redis');
     return {
       transport: Transport.REDIS,
-      options: {
-        url: `redis://${redisConfig.host}:${redisConfig.port}`,
-      },
+      options: redisConfig,
     };
   }
 }
