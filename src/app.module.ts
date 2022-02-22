@@ -19,13 +19,9 @@ import { configs, getConfigFiles } from './_common/configs';
     RedisModule.forRootAsync({
       imports: [ConfigService],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        console.log('Config in the module forroot');
-        console.log(configService.get('database.redis'));
-        return {
-          config: configService.get('database.redis'),
-        };
-      },
+      useFactory: (configService: ConfigService) => ({
+        config: configService.get('database.redis'),
+      }),
     }),
 
     RedisClientModule,
