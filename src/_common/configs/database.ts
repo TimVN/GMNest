@@ -9,7 +9,7 @@ export const redisConfig = () => {
 
     return {
       host,
-      port,
+      port: +port,
       password,
     };
   }
