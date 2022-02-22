@@ -5,6 +5,8 @@ export const getConfigFiles = () => {
     return [];
   }
 
+  console.log(process.env);
+
   return ['.env.development'];
 };
 
