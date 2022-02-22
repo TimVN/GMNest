@@ -2,9 +2,15 @@ import { registerAs } from '@nestjs/config';
 
 export const redisConfig = () => {
   if (process.env.REDISTOGO_URL) {
+    const parts = process.env.REDISTOGO_URL.substring(8).split('@');
+
+    const [password] = parts[0].split(':');
+    const [host, port] = parts[1].split(':');
+
     return {
-      url: process.env.REDISTOGO_URL,
-      password: process.env.REDIS_PASSWORD || undefined,
+      host,
+      port,
+      password,
     };
   }
 
