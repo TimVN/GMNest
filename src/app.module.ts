@@ -5,7 +5,7 @@ import { ChatModule } from './chat/chat.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { RedisClientModule } from './_common/modules/redis-client.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { configs } from './_common/configs';
+import {configs, getConfigFiles} from './_common/configs';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { configs } from './_common/configs';
       isGlobal: true,
       cache: true,
       load: configs,
-      envFilePath: ['.env.development'],
+      envFilePath: getConfigFiles(),
     }),
 
     RedisModule.forRootAsync({
