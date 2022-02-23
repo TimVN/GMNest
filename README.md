@@ -4,6 +4,8 @@
 
 <p align="center">A simple setup for creating multiplayer HTML5 with Game Maker Studio 2.3</p>
 
+A live example of this app can be [seen here](https://gmnest-chat-example.herokuapp.com). Press enter to chat
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework chat server example for GMNest
@@ -43,7 +45,7 @@ $ npm run start:prod
 
 ## Installing the extension in Game Maker
 
-The `client` folder contains the gm-socket.io extension: `gm-socket.io.yymps`. Simply drag it onto your existing or new project.
+You can install it from the [Yoyogames Marketplace](https://marketplace.yoyogames.com/assets/10712/gmsocket-io) or install the extension dragging the `gm-socket.io.yymps` file in the `client` folder into your project.
 
 The docs for the extension will come soon!
 
