@@ -4,8 +4,6 @@
 
 <p align="center">A simple setup for creating multiplayer HTML5 with Game Maker Studio 2.3</p>
 
-A live example of this app can be [seen here](https://gmnest-chat-example.herokuapp.com). Press enter to chat
-
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework chat server example for GMNest
